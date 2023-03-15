@@ -1,0 +1,133 @@
+---
+name: Cargo Build and Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'build.rs'
+      - 'Cargo.*'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'build.rs'
+      - 'Cargo.*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  format:
+    name: Run rustfmt
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install external dependencies
+        run: sudo apt install -y protobuf-compiler
+
+      - name: Install Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          components: rustfmt
+
+      - name: Cache for Rust
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run rustfmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  clippy:
+    name: Run clippy
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install external dependencies
+        run: sudo apt install -y protobuf-compiler
+
+      - name: Install Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          components: clippy
+
+      - name: Cache for Rust
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --all
+
+  build:
+    name: Build project
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install external dependencies
+        run: sudo apt install -y protobuf-compiler
+
+      - name: Install Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+
+      - name: Cache for Rust
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --verbose
+
+  test:
+    name: Test project (unit and integration tests)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install external dependencies
+        run: sudo apt install -y protobuf-compiler
+
+      - name: Install Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+
+      - name: Cache for Rust
+        uses: Swatinem/rust-cache@v2
+
+      - name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --verbose
+
+  dprint:
+    name: Run dprint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dprint/check@v2.2
