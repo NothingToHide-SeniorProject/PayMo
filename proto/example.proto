@@ -3,9 +3,10 @@ syntax = "proto3";
 package example;
 
 enum PhoneType {
-  MOBILE = 0;
-  HOME = 1;
-  WORK = 2;
+  PHONE_TYPE_UNSPECIFIED = 0;
+  MOBILE = 1;
+  HOME = 2;
+  WORK = 3;
 }
 
 message Person {
@@ -14,4 +15,11 @@ message Person {
   optional string email = 3;
   int32 age = 4;
   PhoneType phone_type = 5;
+}
+
+message Foo {
+  oneof widget {
+    int32 quux = 1;
+    string bar = 2;
+  }
 }
