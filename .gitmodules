@@ -1,0 +1,3 @@
+[submodule "src/paymod/src/paymod/liblhtlp"]
+	path = src/paymod/src/paymod/liblhtlp
+	url = https://github.com/verifiable-timed-signatures/liblhtlp

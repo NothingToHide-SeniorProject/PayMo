@@ -1,6 +1,24 @@
+extern crate libc;
+
+type mpz_t = [libc::c_ulong; 1]; // or [libc::c_uchar; 16], depending on architecture
+
+#[repr(C)]
+struct LHP_puzzle_t {
+    u:mpz_t,
+    v:mpz_t, 
+}
+
+#[repr(C)]
+struct LHP_param_t {
+	T:mpz_t,
+	N:mpz_t,
+	g:mpz_t,
+	h:mpz_t,
+}
+
 pub mod paymo {
     pub fn op_channel() {
-
+        
     }
 
     pub fn cl_channel() {
