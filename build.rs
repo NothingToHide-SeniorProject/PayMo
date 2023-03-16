@@ -8,4 +8,6 @@ fn main() {
     prost_build
         .compile_protos(&proto_files, &["src/protos/"])
         .unwrap();
+
+    
 }
