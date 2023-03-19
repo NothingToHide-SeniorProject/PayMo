@@ -1,3 +1,5 @@
+pub mod config;
+
 pub mod opts;
 pub use opts::init_logger;
 
