@@ -1,3 +1,6 @@
+pub mod cli;
+pub use cli::client;
+
 pub mod config;
 
 pub mod opts;
