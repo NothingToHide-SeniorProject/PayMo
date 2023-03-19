@@ -13,7 +13,6 @@ default-run = "cli"
 anyhow = "1.0.69"
 base58-monero = "1.0.0"
 bytes = "1.4.0"
-chrono = "0.4.23"
 clap = { version = "4.1.6", features = ["derive"] }
 clap_complete = "4.1.2"
 colored = "2.0.0"
