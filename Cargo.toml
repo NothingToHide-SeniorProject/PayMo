@@ -1,11 +1,11 @@
 [package]
 name = "paymo"
 version = "0.1.0"
+default-run = "cli"
 edition = "2021"
 homepage = "https://github.com/NothingToHide-SeniorProject/PayMo"
-repository = "https://github.com/NothingToHide-SeniorProject/PayMo"
 readme = "README.md"
-default-run = "cli"
+repository = "https://github.com/NothingToHide-SeniorProject/PayMo"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
