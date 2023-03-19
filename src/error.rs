@@ -11,4 +11,7 @@ pub enum Error {
 
     #[error("CLI error: {0}")]
     Cli(#[from] cli::Error),
+
+    #[error(transparent)]
+    MoneroAddress(#[from] monero::util::address::Error),
 }
