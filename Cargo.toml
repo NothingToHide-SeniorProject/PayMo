@@ -26,7 +26,6 @@ hex-literal = "0.3.4"
 log = "0.4.17"
 monero = { version = "0.18.2", features = ["serde"] }
 monero-rpc = "0.3.2"
-nix = "0.26.2"
 prost = "0.11.6"
 rand = "0.8.5"
 serde = { version = "1.0.152", features = ["derive"] }
