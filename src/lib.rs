@@ -1,11 +1,12 @@
 pub mod cli;
 pub use cli::client;
 
-pub mod config;
 pub mod core;
 pub mod peerd;
 pub mod walletd;
 pub mod watcherd;
+
+pub mod config;
 
 pub mod opts;
 pub use opts::init_logger;
