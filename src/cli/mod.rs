@@ -1,4 +1,4 @@
-mod clap_validators;
+mod clap_value_parsers;
 pub mod client;
 pub mod error;
 mod opts;
