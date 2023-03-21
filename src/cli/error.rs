@@ -16,6 +16,14 @@ pub enum Error {
     #[error("Invalid --time: must be greater than 10s, but {0:?} was provided")]
     InvalidTime(time::Duration),
 
+    #[error(
+        "\
+Invalid url: {0}; for now, it must be a well formatted URL that must a tcp:// and \
+must contain a port and a host, being IPv4 formatted. It must also contain a valid \
+UUIDv4 as a path. Any other thing passed to the string (such as query params) is ignored."
+    )]
+    InvalidUrl(String),
+
     #[error(transparent)]
     Cmd(#[from] CmdError),
 }
