@@ -1,4 +1,4 @@
-use crate::{cli, config};
+use crate::{cli, client, config, core, peerd, walletd, watcherd};
 use std::io;
 use thiserror::Error;
 
@@ -14,6 +14,21 @@ pub enum Error {
 
     #[error("CLI error: {0}")]
     Cli(#[from] cli::Error),
+
+    #[error("Client error: {0}")]
+    Client(#[from] client::Error),
+
+    #[error("Core error: {0}")]
+    Core(#[from] core::Error),
+
+    #[error("Peerd error: {0}")]
+    Peerd(#[from] peerd::Error),
+
+    #[error("Walletd error: {0}")]
+    Walletd(#[from] walletd::Error),
+
+    #[error("Watcherd error: {0}")]
+    Watcherd(#[from] watcherd::Error),
 
     #[error(transparent)]
     MoneroAddress(#[from] monero::util::address::Error),
