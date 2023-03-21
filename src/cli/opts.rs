@@ -1,24 +1,26 @@
-use clap::{CommandFactory, Parser, ValueHint};
+use clap::{CommandFactory, Parser};
 use clap_complete::{generate, Shell};
 use log::{debug, info};
 use std::io;
 use std::path;
 use std::time;
 
-use super::clap_validators::{valid_address_network, valid_t_duration};
+use crate::peerd;
+
+use super::clap_value_parsers::{parse_address_network, parse_connect, parse_t_duration};
 use super::client::Role;
 use super::error::{CmdError, Error};
 
 #[derive(Parser, Debug)]
 #[command(name="paymo-cli", bin_name="paymo-cli", author, version, about, long_about = None)]
 pub struct Opts {
-    #[arg(short, long, value_name = "DIR", value_hint = ValueHint::DirPath)]
-    pub data_dir: path::PathBuf,
+    #[clap(flatten)]
+    pub shared: crate::opts::SharedOpts,
 
     #[arg(long, value_enum)]
     pub role: Role,
 
-    #[arg(short, long, value_name = "XMR ADDRESS", value_parser = valid_address_network)]
+    #[arg(short, long, value_name = "XMR ADDRESS", value_parser = parse_address_network)]
     pub address: monero::Address,
 
     #[clap(flatten)]
@@ -38,6 +40,8 @@ impl Opts {
     pub fn try_init() -> crate::Result<Self> {
         let mut opts = Opts::parse();
         debug!("Initial CLI options: {opts:#?}");
+
+        opts.shared.expand_data_dir()?;
 
         opts.validate_role_opts()?;
 
@@ -121,7 +125,7 @@ impl Opts {
     }
 
     fn populate_config_file(&mut self) -> crate::Result<()> {
-        self.config_file = self.data_dir.join("paymo.toml");
+        self.config_file = self.shared.data_dir.join("paymo.toml");
 
         if !self.config_file.is_file() {
             return Err(Error::FileNotFound(self.config_file.clone()).into());
@@ -142,7 +146,7 @@ pub struct AliceOpts {
     channel_amount: Option<monero::Amount>,
 
     /// Time in seconds; must be greater than 10s for now
-    #[clap(short, long, value_parser = valid_t_duration)]
+    #[clap(short, long, value_parser = parse_t_duration)]
     time: Option<time::Duration>,
 
     #[clap(long)]
@@ -151,9 +155,8 @@ pub struct AliceOpts {
 
 #[derive(Parser, Debug)]
 pub struct BobOpts {
-    #[clap(long)]
-    // TODO custom type
-    connect: Option<u64>,
+    #[clap(long, value_parser = parse_connect)]
+    connect: Option<peerd::Url>,
 }
 
 trait ArgsList: CommandFactory {

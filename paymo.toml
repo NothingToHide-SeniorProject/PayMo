@@ -1,9 +1,9 @@
-[paymo]
 # Port to bind for peer communication
 bind_port = 9000
 # IP to bind for peer communication
 bind_ip = "0.0.0.0"
 
-[paymo.monero]
+[monero]
 daemon = "http://localhost:18081"
+daemon_zmq = "tcp://0.0.0.0:18082"
 wallet_rpc = "http://localhost:18083"
