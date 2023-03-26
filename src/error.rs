@@ -1,4 +1,5 @@
 use crate::{cli, client, config, core, peerd, walletd, watcherd};
+use prost::DecodeError;
 use std::io;
 use thiserror::Error;
 
@@ -32,4 +33,10 @@ pub enum Error {
 
     #[error(transparent)]
     MoneroAddress(#[from] monero::util::address::Error),
+
+    #[error("ZMQ error: {0}")]
+    Zmq(#[from] zmq::Error),
+
+    #[error(transparent)]
+    ProtobufDecode(#[from] DecodeError),
 }

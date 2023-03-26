@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package msgs;
+
+enum Process {
+  PROCESS_TYPE_UNSPECIFIED = 0;
+  PROCESS_PEERD = 1;
+  PROCESS_WALLETD = 2;
+  PROCESS_WATCHERD = 3;
+}
+
+message ChannelInfo {
+  uint64 channel_amount = 1;
+  uint64 time = 2;
+  uint32 confirmations = 3;
+}
+
+//
+// *** Messages Client <-> Peerd ***
+//
+message PeerdMsg {
+  enum PeerdMsgType {
+    PEERD_MSG_TYPE_UNSPECIFIED = 0;
+
+    REQ_CHANNEL_INFO = 1;
+    RES_CHANNEL_INFO = 2;
+
+    SEND_CHANNEL_INFO = 3;
+
+    ALICE_REQ_ADDRESS = 4;
+    BOB_REQ_ADDRESS = 5;
+
+    RES_ADDRESS = 6;
+
+    BOB_UPDATE_ALICE_ADDRESS = 7;
+    ALICE_UPDATE_BOB_ADDRESS = 8;
+  }
+
+  PeerdMsgType msg_type = 1;
+
+  oneof data {
+    ChannelInfo channel_info = 2;
+    string address = 3;
+  }
+}
+
+//
+// *** Peer to Peer messages between Alice and Bob ***
+//
+message PeerMsg {
+  enum PeerMsgType {
+    PEER_MSG_TYPE_UNSPECIFIED = 0;
+
+    ACK_ME = 1;
+    ACKED = 2;
+
+    REQ_CHANNEL_INFO = 3;
+    RES_CHANNEL_INFO = 4;
+
+    REQ_ADDRESS = 5;
+    RES_ADDRESS = 6;
+  }
+
+  PeerMsgType msg_type = 1;
+
+  oneof data {
+    ChannelInfo channel_info = 2;
+    string address = 3;
+  }
+}

@@ -29,7 +29,7 @@ fn main() -> paymo::Result<()> {
 
     debug!("{conf:#?}");
 
-    client::Client::new(opts, conf).run()?;
+    client::Client::from_opts(opts).add_conf(conf)?.run()?;
 
     Ok(())
 }

@@ -6,7 +6,9 @@ pub mod peerd;
 pub mod walletd;
 pub mod watcherd;
 
+pub mod bus;
 pub mod config;
+pub mod msgs;
 
 pub mod opts;
 pub use opts::init_logger;

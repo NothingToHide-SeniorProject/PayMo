@@ -1,6 +1,6 @@
 fn main() {
     let proto_path = "./proto/";
-    let proto_files = ["./proto/example.proto"];
+    let proto_files = ["./proto/paymo.proto"];
 
     let mut prost_build = prost_build::Config::new();
     prost_build.protoc_arg("--experimental_allow_proto3_optional");

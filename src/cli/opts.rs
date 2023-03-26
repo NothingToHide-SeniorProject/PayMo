@@ -7,9 +7,9 @@ use std::time;
 
 use crate::peerd;
 
-use super::clap_value_parsers::{parse_address_network, parse_connect, parse_t_duration};
-use super::client::Role;
+use super::clap_value_parsers::{parse_address_network, parse_t_duration};
 use super::error::{CmdError, Error};
+use crate::core::Role;
 
 #[derive(Parser, Debug)]
 #[command(name="paymo-cli", bin_name="paymo-cli", author, version, about, long_about = None)]
@@ -143,20 +143,20 @@ impl Opts {
 #[derive(Parser, Debug)]
 pub struct AliceOpts {
     #[clap(long)]
-    channel_amount: Option<monero::Amount>,
+    pub channel_amount: Option<monero::Amount>,
 
     /// Time in seconds; must be greater than 10s for now
     #[clap(short, long, value_parser = parse_t_duration)]
-    time: Option<time::Duration>,
+    pub time: Option<time::Duration>,
 
     #[clap(long)]
-    confirmations: Option<u32>,
+    pub confirmations: Option<u32>,
 }
 
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone)]
 pub struct BobOpts {
-    #[clap(long, value_parser = parse_connect)]
-    connect: Option<peerd::Url>,
+    #[clap(long)]
+    pub connect: Option<peerd::Url>,
 }
 
 trait ArgsList: CommandFactory {
