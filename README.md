@@ -6,15 +6,34 @@ PayMo [https://eprint.iacr.org/2020/1441](https://eprint.iacr.org/2020/1441) is 
 ## How to run (what we have so far)
 ### Pre-requisites
 - you need `protoc` installed
-- you need a private Monero testnet running; see [https://github.com/moneroexamples/private-testnet](https://github.com/moneroexamples/private-testnet) for details on how to create one
+- you need a private Monero testnet running; see [https://github.com/moneroexamples/private-testnet](https://github.com/moneroexamples/private-testnet) for details on how to create one.
 
-### Running
-First, configure `paymo.toml` with configuration options that fit your local workflow.
-Next, to run the software, run `cargo run --bin cli` in one tab, and start as Alice. Then, run the same command in another tab, as Bob.
+### Running locally
+First, create two folders: one for Alice (sender) and one for Bob (receiver). This is to simulate users running in different computers. In each folder, add a `paymo.toml` containing: ip and port for p2p communication, ip and port of a `monerod` node, and ip and port of a `monero-wallet` node. Make sure the ports for p2p communication are different for each user, and the `monero-wallet` node is also different for each user.
 
-## Architecture
+Next, to run the software, you can do as Alice/Sender or Bob/Receiver:
+```
+cargo run -- -d ./folder-for-user \
+    --role <Sender|Receiver> \
+    --address <your-xmr-address> \
+    --channel-amount <amount in XMR> \
+    --time <time in ?> \
+    --confirmations <how many confirmations to consider an on-chain transaction settled>
+```
+
+In another terminal tab, run the following as Alice/Sender or Bob/Receiver (but as a different user from the previous command):
+```
+cargo run -- -d ./folder-for-user \
+    --role <Sender|Receiver> \
+    --address <your-xmr-address> \
+    --connect <url from previous command>
+```
+
+The CLI will then guide each user to which action to take. Just make sure Alice and Bob have local wallets and addresses in their local `monero-wallet` node (i.e that the provided addresses above actually exist).
+
+## Architecture (subject to change)
 ### High-level view
-In a high level, PayMo consists of a CLI that spawns a daemon, and such daemon takes care of other processes.
+In a high level, PayMo consists of a CLI that spawns other processes.
 
 There are two parties that participate in a channel: Alice and Bob. We define Alice as the party that *sends* transactions, i.e. is at the start of the channel; Bob is the party the *receives* the transactions, i.e. is at the end of the channel.
 
@@ -24,15 +43,13 @@ There are two situations: Alice wants to open a channel, or Bob wants to open a 
 1. Alice uses the CLI to create an "open channel" offer; the CLI will show params she should select, such as the amount, how long to wait to close the channel if the other party (or Alice herself) is not responsive, how many blocks to wait to consider a transaction "safe", etc
 2. After all params are selected, the CLI:
 	1. creates an URL that Alice will need to publish somewhere or send to Bob
-	2. spawns a daemon process (henceforth called `paymo-daemon`), and `paymo-daemon` spawns another process, namely:
-		1. `peerd`: listens for an incoming peer
+	2. spawns all other processes (listed below).
 
 Now, suppose Bob got the link from Alice. Then, Bob will use the CLI and submit the URL. The URL will show what are the params of the "channel offer", and Bob will be able to accept or refuse.
 1. If Bob refuses, the CLI simply exists
-2. If Bob accepts, the CLI spawns `paymo-daemon`, and `paymo-daemon` spawns another process, namely:
-		1. `peerd`: connects to Alice's `peerd` process
+2. If Bob accepts, the CLI spawns all other processes.
 
-Now, for both Alice and Bob, `paymo-daemon` spawns the following processes:
+The processes the CLI spawns are:
 1. `paymod`: handles the core logic of the protocol
 2. `watcherd`: watches for events in the Monero blockchain (e.g. if a transaction was submitted, how many confirmations a transaction has had, etc)
 3. `peerd`: has already been spawned; handles communication between the peers
@@ -43,8 +60,8 @@ Note that the CLI will keep running, showing what is happening, what must be don
 #### Notes
 - we will start with the case of only a single peer; we will improve later
 - the more low-level details of how the protocol works will be described later.
-- details on recovering state if one party loses connection, etc, will also be described later
-- all processes communicate through `ZeroMQ`, serialized over `ProtoBufs`
+- details on recovering state if one party loses connection, etc, will also be described later; fow now, we assume both parties are online at all times and no one disconnects before the channel is closed.
+- all processes communicate through `ZeroMQ`, serialized over `Protocol Buffers`
 - all processes implement command line options (using `clap`), so that they can be spawned with different options
 - for now, the communication between peers is not encrypted, but IT MUST BE; we can implement https://github.com/lightning/bolts/blob/master/08-transport.md later OR use `internet2` OR require TLS for peers.
 
