@@ -1,3 +1,5 @@
+use std::process::Command;
+
 fn main() {
     println!("cargo:rerun-if-changed=src/protos/");
 
@@ -9,5 +11,12 @@ fn main() {
         .compile_protos(&proto_files, &["src/protos/"])
         .unwrap();
 
-    
+    let output = Command::new("make")
+        .current_dir("liblhtlp")
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+
+    println!("cargo:rustc-link-search=native=liblhtlp/lib");
+    println!("cargo:rustc-link-lib=liblhtlp");
 }

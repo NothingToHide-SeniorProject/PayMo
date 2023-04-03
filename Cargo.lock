@@ -1455,6 +1455,7 @@ dependencies = [
  "anyhow",
  "base58-monero",
  "bytes",
+ "cc",
  "chrono",
  "clap",
  "clap_complete",

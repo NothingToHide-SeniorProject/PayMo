@@ -48,3 +48,4 @@ zmq = "0.10.0"
 
 [build-dependencies]
 prost-build = "0.11.6"
+cc = "1.0"
