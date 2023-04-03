@@ -1,0 +1,5 @@
+#include "liblhtlp/include/config.h"
+#include "liblhtlp/include/lhp.h"
+#include "liblhtlp/include/params.h"
+#include "liblhtlp/include/puzzle.h"
+#include "liblhtlp/include/util.h"

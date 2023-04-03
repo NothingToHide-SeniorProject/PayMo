@@ -16,6 +16,7 @@ clap = { version = "4.1.6", features = ["derive"] }
 clap_complete = "4.1.2"
 colored = "2.0.0"
 config = "0.13.3"
+cty = "0.2.2"
 curve25519-dalek = "3.2.1"
 ed25519-dalek = "1.0.1"
 fixed-hash = "0.8.0"
@@ -36,4 +37,9 @@ x25519-dalek = "1.2.0"
 zmq = "0.10.0"
 
 [build-dependencies]
+bindgen = "0.64.0"
+cc = "1.0.79"
 prost-build = "0.11.6"
+
+[dev-dependencies]
+num-bigint = "0.4.3"

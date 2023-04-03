@@ -3,6 +3,8 @@ use core::time;
 use log::debug;
 use std::{env, ffi::OsStr, fmt::Display, process};
 
+mod lhtlp;
+
 #[derive(Debug)]
 pub enum PaymoProcess {
     Walled,
