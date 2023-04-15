@@ -10,30 +10,28 @@ repository = "https://github.com/NothingToHide-SeniorProject/PayMo"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.69"
-bytes = "1.4.0"
+base58-monero = "1.0.0"
 clap = { version = "4.1.6", features = ["derive"] }
 clap_complete = "4.1.2"
 colored = "2.0.0"
 config = "0.13.3"
 cty = "0.2.2"
-curve25519-dalek = "3.2.1"
-ed25519-dalek = "1.0.1"
-fixed-hash = "0.8.0"
+curve25519-dalek = "3.2"
 hex = "0.4.3"
 hex-literal = "0.3.4"
+lazy_static = "1.4.0"
 log = "0.4.17"
-monero = { version = "0.18.2", features = ["serde"] }
+monero = "0.18.2"
 monero-rpc = "0.3.2"
+monero-serai = "0.1.4-alpha"
 pretty_env_logger = "0.4.0"
 prost = "0.11.6"
-rand = "0.8.5"
+rand_core = { version = "0.6.4", features = ["getrandom"] }
 serde = { version = "1.0.152", features = ["derive"] }
+sha3 = "0.10.6"
 thiserror = "1.0.38"
-tiny-keccak = { version = "2.0.2", features = ["keccak"] }
-tokio = "1.25.0"
+tokio = { version = "1.25.0", features = ["full"] }
 url = "2.3.1"
-x25519-dalek = "1.2.0"
 zmq = "0.10.0"
 
 [build-dependencies]

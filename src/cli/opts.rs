@@ -1,9 +1,9 @@
 use clap::{CommandFactory, Parser};
 use clap_complete::{generate, Shell};
 use log::{debug, info};
+use monero_serai::wallet::address;
 use std::io;
 use std::path;
-use std::time;
 
 use crate::peerd;
 
@@ -21,7 +21,7 @@ pub struct Opts {
     pub role: Role,
 
     #[arg(short, long, value_name = "XMR ADDRESS", value_parser = parse_address_network)]
-    pub address: monero::Address,
+    pub address: address::MoneroAddress,
 
     #[clap(flatten)]
     pub alice_opts: Option<AliceOpts>,
@@ -145,9 +145,9 @@ pub struct AliceOpts {
     #[clap(long)]
     pub channel_amount: Option<monero::Amount>,
 
-    /// Time in seconds; must be greater than 10s for now
+    /// Time is the number of squarings that should be performed; must be greater than 100 for now.
     #[clap(short, long, value_parser = parse_t_duration)]
-    pub time: Option<time::Duration>,
+    pub time: Option<u64>,
 
     #[clap(long)]
     pub confirmations: Option<u32>,

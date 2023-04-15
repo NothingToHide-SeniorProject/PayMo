@@ -1,6 +1,6 @@
 use crate::cli::Opts;
 use clap::CommandFactory;
-use std::{path::PathBuf, time};
+use std::path::PathBuf;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -13,8 +13,8 @@ pub enum Error {
     #[error(transparent)]
     ParseInt(#[from] std::num::ParseIntError),
 
-    #[error("Invalid --time: must be greater than 10s, but {0:?} was provided")]
-    InvalidTime(time::Duration),
+    #[error("Invalid --time: must be greater than 100, but {0:?} was provided")]
+    InvalidTime(u64),
 
     #[error(transparent)]
     Cmd(#[from] CmdError),

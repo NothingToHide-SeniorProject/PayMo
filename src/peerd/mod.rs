@@ -1,7 +1,7 @@
 use crate::msgs;
 use clap::{ArgGroup, Parser};
 use colored::Colorize;
-use log::{debug, info};
+use log::debug;
 use msgs::{peer_msg, peerd_msg};
 use prost::Message;
 use std::{fmt::Display, net, str::FromStr, thread, time::Duration};
@@ -174,23 +174,10 @@ impl Peerd {
 
     fn recv(&mut self) -> crate::Result<()> {
         loop {
-            let from_client_socket = self.from_client_socket.as_mut().unwrap();
             let peerd_socket = self.peerd_socket.as_mut().unwrap();
 
-            let mut items = [
-                from_client_socket.as_poll_item(zmq::POLLIN),
-                peerd_socket.as_poll_item(zmq::POLLIN),
-            ];
-
-            zmq::poll(&mut items, -1)?;
-
-            // TODO
-            if items[0].is_readable() {}
-
-            if items[1].is_readable() {
-                let data = peerd_socket.recv_bytes(0)?;
-                self.recv_from_peer(data)?;
-            }
+            let data = peerd_socket.recv_bytes(0)?;
+            self.recv_from_peer(data)?;
         }
     }
 
@@ -349,7 +336,7 @@ impl Peerd {
                 println!("{}", "SENT".cyan());
                 println!(
                     "\n{}\n",
-                    "NOW WE ARE READY TO BEGIN THE CREATION OF THE MULTISIG ADDRESS".purple()
+                    "NOW WE ARE READY TO BEGIN THE CREATION OF THE JOINT ADDRESS".purple()
                 );
             }
 
@@ -369,10 +356,148 @@ impl Peerd {
 
                 println!(
                     "\n{}\n",
-                    "NOW WE ARE READY TO BEGIN THE CREATION OF THE MULTISIG ADDRESS".purple()
+                    "NOW WE ARE READY TO BEGIN THE CREATION OF THE JOINT ADDRESS".purple()
                 );
 
-                // TODO signal to start creation of multisig address
+                self.send_to_peer(peer_msg::PeerMsgType::StartJoint, None)?;
+            }
+
+            StartJoint => {
+                println!("{}", "STARTING JOINT CREATION".purple());
+
+                println!("{}", "FIRST, ASK CLIENT TO GENERATE A SECRET".purple());
+                self.send_to_client(peerd_msg::PeerdMsgType::AliceCreateSecret, None)?;
+
+                println!(
+                    "{}",
+                    "NOW, ASK CLIENT TO GIVE ME THE HASH OF THE PUBLIC KEY".purple()
+                );
+                self.send_to_client(peerd_msg::PeerdMsgType::AliceReqHash, None)?;
+
+                let client_data = self.recv_from_client(peerd_msg::PeerdMsgType::AliceResHash)?;
+                let hash = if let peerd_msg::Data::Hash(hash) = client_data {
+                    hash
+                } else {
+                    unreachable!()
+                };
+
+                println!("HASH RECEIVED FROM CLIENT {}", hex::encode(&hash));
+                println!("{}", "SENDING HASH TO BOB".purple());
+                let data = peer_msg::Data::Hash(hash);
+                self.send_to_peer(peer_msg::PeerMsgType::AliceResHash, Some(data))?;
+            }
+
+            AliceResHash => {
+                let alice_hash = if let peer_msg::Data::Hash(alice_hash) = data.data.unwrap() {
+                    alice_hash
+                } else {
+                    unreachable!()
+                };
+
+                println!("HASH RECEIVED FROM ALICE {}", hex::encode(&alice_hash));
+
+                self.send_to_client(
+                    peerd_msg::PeerdMsgType::BobUpdateAliceHash,
+                    Some(peerd_msg::Data::Hash(alice_hash)),
+                )?;
+
+                println!("{}", "ASK CLIENT TO GENERATE A SECRET".purple());
+                self.send_to_client(peerd_msg::PeerdMsgType::BobCreateSecret, None)?;
+
+                self.send_to_client(peerd_msg::PeerdMsgType::BobReqPubkey, None)?;
+                let client_data = self.recv_from_client(peerd_msg::PeerdMsgType::BobResPubkey)?;
+                let pubkey = if let peerd_msg::Data::Pubkey(pubkey) = client_data {
+                    pubkey
+                } else {
+                    unreachable!()
+                };
+
+                println!("{}", "SENDING BOB'S PUBLIC KEY TO ALICE".purple());
+                let data = peer_msg::Data::Pubkey(pubkey);
+                self.send_to_peer(peer_msg::PeerMsgType::BobResPubkey, Some(data))?;
+            }
+
+            BobResPubkey => {
+                let bob_pubkey = if let peer_msg::Data::Pubkey(bob_pubkey) = data.data.unwrap() {
+                    bob_pubkey
+                } else {
+                    unreachable!()
+                };
+
+                let data = peerd_msg::Data::Pubkey(bob_pubkey);
+                self.send_to_client(peerd_msg::PeerdMsgType::AliceUpdateBobKey, Some(data))?;
+
+                self.send_to_client(peerd_msg::PeerdMsgType::AliceReqPubkey, None)?;
+                let client_data = self.recv_from_client(peerd_msg::PeerdMsgType::AliceResPubkey)?;
+                let pubkey = if let peerd_msg::Data::Pubkey(pubkey) = client_data {
+                    pubkey
+                } else {
+                    unreachable!()
+                };
+
+                println!("{}", "SENDING ALICE'S PUBLIC KEY TO BOB".purple());
+                let data = peer_msg::Data::Pubkey(pubkey);
+                self.send_to_peer(peer_msg::PeerMsgType::AliceResPubkey, Some(data))?;
+            }
+
+            AliceResPubkey => {
+                let alice_pubkey = if let peer_msg::Data::Pubkey(alice_pubkey) = data.data.unwrap()
+                {
+                    alice_pubkey
+                } else {
+                    unreachable!()
+                };
+
+                let data = peerd_msg::Data::Pubkey(alice_pubkey);
+                self.send_to_client(peerd_msg::PeerdMsgType::BobUpdateAliceKey, Some(data))?;
+
+                self.send_to_client(peerd_msg::PeerdMsgType::BobReqTag, None)?;
+                let client_data = self.recv_from_client(peerd_msg::PeerdMsgType::BobResTag)?;
+                let tag = if let peerd_msg::Data::Tag(tag) = client_data {
+                    tag
+                } else {
+                    unreachable!()
+                };
+
+                self.send_to_peer(
+                    peer_msg::PeerMsgType::BobResTag,
+                    Some(peer_msg::Data::Tag(tag)),
+                )?;
+            }
+
+            BobResTag => {
+                let bob_tag = if let peer_msg::Data::Tag(bob_tag) = data.data.unwrap() {
+                    bob_tag
+                } else {
+                    unreachable!()
+                };
+
+                let data = peerd_msg::Data::Tag(bob_tag);
+                self.send_to_client(peerd_msg::PeerdMsgType::AliceUpdateBobTag, Some(data))?;
+
+                self.send_to_client(peerd_msg::PeerdMsgType::AliceReqTag, None)?;
+                let client_data = self.recv_from_client(peerd_msg::PeerdMsgType::AliceResTag)?;
+                let tag = if let peerd_msg::Data::Tag(tag) = client_data {
+                    tag
+                } else {
+                    unreachable!()
+                };
+
+                self.send_to_peer(
+                    peer_msg::PeerMsgType::AliceResTag,
+                    Some(peer_msg::Data::Tag(tag)),
+                )?;
+            }
+
+            AliceResTag => {
+                let alice_tag = if let peer_msg::Data::Tag(alice_tag) = data.data.unwrap() {
+                    alice_tag
+                } else {
+                    unreachable!()
+                };
+
+                let data = peerd_msg::Data::Tag(alice_tag);
+                self.send_to_client(peerd_msg::PeerdMsgType::BobUpdateAliceTag, Some(data))?;
             }
 
             Unspecified => unreachable!(),

@@ -7,8 +7,12 @@ use std::str::FromStr;
 use std::thread;
 use std::time::Duration;
 
+use curve25519_dalek::edwards::CompressedEdwardsY;
+use monero_serai::wallet::address;
+
 use super::opts::Opts;
 use crate::config::Config;
+use crate::core::utils::{generate_user_key_pair, generate_user_tag, hash};
 use crate::core::{self, Role};
 use crate::msgs::{self, peerd_msg};
 
@@ -136,6 +140,8 @@ impl Client {
         self.bind_client_sockets()?;
 
         self.peerd_process = Some(self.spawn_peerd()?);
+
+        // temporary solution to garantee sockets are connected
         thread::sleep(Duration::from_millis(200));
 
         if self.role == Role::Alice {
@@ -185,8 +191,7 @@ impl Client {
                 let channel_amount = self.channel.channel_amount.as_ref();
                 let channel_amount = channel_amount.unwrap().as_pico();
 
-                let time = self.channel.time.as_ref();
-                let time = time.unwrap().as_secs();
+                let time = self.channel.time.unwrap();
 
                 let confirmations = self.channel.confirmations.as_ref();
                 let confirmations = *confirmations.unwrap();
@@ -214,10 +219,9 @@ impl Client {
                 };
 
                 let channel_amount = monero::Amount::from_pico(channel_info.channel_amount);
-                let time = Duration::from_secs(channel_info.time);
 
                 self.channel.channel_amount = Some(channel_amount);
-                self.channel.time = Some(time);
+                self.channel.time = Some(channel_info.time);
                 self.channel.confirmations = Some(channel_info.confirmations);
 
                 debug!("{:#?}", self.channel);
@@ -243,7 +247,8 @@ impl Client {
                 } else {
                     unreachable!()
                 };
-                self.channel.bob_address = Some(monero::Address::from_str(&bob_address)?);
+                self.channel.bob_address =
+                    Some(address::MoneroAddress::from_str_raw(&bob_address)?);
 
                 debug!("{:#?}", self.channel);
             }
@@ -257,13 +262,212 @@ impl Client {
                     } else {
                         unreachable!()
                     };
-                self.channel.alice_address = Some(monero::Address::from_str(&alice_address)?);
+                self.channel.alice_address =
+                    Some(address::MoneroAddress::from_str_raw(&alice_address)?);
 
                 debug!("{:#?}", self.channel);
             }
 
+            AliceCreateSecret => {
+                let (alice_secret, alice_public_key) = generate_user_key_pair();
+                let alice_hash = hash(alice_public_key.compress().as_bytes());
+
+                self.channel.alice_secret = Some(alice_secret);
+                self.channel.alice_public_key = Some(alice_public_key);
+                self.channel.alice_hash = Some(alice_hash.to_vec());
+
+                debug!("Alice's hash is {}", hex::encode(alice_hash));
+            }
+
+            BobCreateSecret => {
+                let (bob_secret, bob_public_key) = generate_user_key_pair();
+
+                self.channel.bob_secret = Some(bob_secret);
+                self.channel.bob_public_key = Some(bob_public_key);
+            }
+
+            AliceReqHash => {
+                let data =
+                    peerd_msg::Data::Hash(self.channel.alice_hash.as_ref().unwrap().to_vec());
+                self.send_to_peerd(peerd_msg::PeerdMsgType::AliceResHash, Some(data))?;
+            }
+
+            BobUpdateAliceHash => {
+                let alice_hash = if let peerd_msg::Data::Hash(alice_hash) = msg.data.unwrap() {
+                    alice_hash
+                } else {
+                    unreachable!()
+                };
+
+                self.channel.alice_hash = Some(alice_hash);
+            }
+
+            AliceReqPubkey => {
+                let data = peerd_msg::Data::Pubkey(
+                    self.channel
+                        .alice_public_key
+                        .as_ref()
+                        .unwrap()
+                        .compress()
+                        .to_bytes()
+                        .to_vec(),
+                );
+                self.send_to_peerd(peerd_msg::PeerdMsgType::AliceResPubkey, Some(data))?;
+            }
+
+            BobReqPubkey => {
+                let data = peerd_msg::Data::Pubkey(
+                    self.channel
+                        .bob_public_key
+                        .as_ref()
+                        .unwrap()
+                        .compress()
+                        .to_bytes()
+                        .to_vec(),
+                );
+                self.send_to_peerd(peerd_msg::PeerdMsgType::BobResPubkey, Some(data))?;
+            }
+
+            AliceUpdateBobKey => {
+                let bob_pubkey = if let peerd_msg::Data::Pubkey(bob_pubkey) = msg.data.unwrap() {
+                    bob_pubkey
+                } else {
+                    unreachable!()
+                };
+                let bob_pubkey = CompressedEdwardsY::from_slice(&bob_pubkey)
+                    .decompress()
+                    .unwrap();
+
+                self.channel.bob_public_key = Some(bob_pubkey);
+
+                let joint_pubkey = self.channel.alice_public_key.as_ref().unwrap()
+                    + self.channel.bob_public_key.as_ref().unwrap();
+                self.channel.joint_public_key = Some(joint_pubkey);
+                println!(
+                    "{} {}",
+                    "JOINT PUBKEY:".green(),
+                    hex::encode(joint_pubkey.compress().to_bytes()).green()
+                );
+
+                let alice_tag =
+                    generate_user_tag(&joint_pubkey, self.channel.alice_secret.as_ref().unwrap());
+                self.channel.alice_tag = Some(alice_tag);
+            }
+
+            BobUpdateAliceKey => {
+                let alice_pubkey = if let peerd_msg::Data::Pubkey(alice_pubkey) = msg.data.unwrap()
+                {
+                    alice_pubkey
+                } else {
+                    unreachable!()
+                };
+                let alice_pubkey = CompressedEdwardsY::from_slice(&alice_pubkey)
+                    .decompress()
+                    .unwrap();
+
+                let expected_hash = self.channel.alice_hash.as_ref().unwrap();
+                let computed_hash = hash(alice_pubkey.compress().as_bytes());
+
+                println!("Expected hash: {}", hex::encode(expected_hash));
+                println!("Computed hash: {}", hex::encode(computed_hash));
+
+                assert_eq!(expected_hash, &computed_hash);
+
+                self.channel.alice_public_key = Some(alice_pubkey);
+
+                let joint_pubkey = self.channel.alice_public_key.as_ref().unwrap()
+                    + self.channel.bob_public_key.as_ref().unwrap();
+                self.channel.joint_public_key = Some(joint_pubkey);
+                println!(
+                    "{} {}",
+                    "JOINT PUBKEY:".green(),
+                    hex::encode(joint_pubkey.compress().to_bytes()).green()
+                );
+
+                let bob_tag =
+                    generate_user_tag(&joint_pubkey, self.channel.bob_secret.as_ref().unwrap());
+                self.channel.bob_tag = Some(bob_tag);
+            }
+
+            AliceReqTag => {
+                let data = peerd_msg::Data::Tag(
+                    self.channel
+                        .alice_tag
+                        .as_ref()
+                        .unwrap()
+                        .compress()
+                        .as_bytes()
+                        .to_vec(),
+                );
+                self.send_to_peerd(peerd_msg::PeerdMsgType::AliceResTag, Some(data))?;
+            }
+
+            BobReqTag => {
+                let data = peerd_msg::Data::Tag(
+                    self.channel
+                        .bob_tag
+                        .as_ref()
+                        .unwrap()
+                        .compress()
+                        .as_bytes()
+                        .to_vec(),
+                );
+                self.send_to_peerd(peerd_msg::PeerdMsgType::BobResTag, Some(data))?;
+            }
+
+            AliceUpdateBobTag => {
+                let bob_tag = if let peerd_msg::Data::Tag(bob_tag) = msg.data.unwrap() {
+                    bob_tag
+                } else {
+                    unreachable!()
+                };
+                let bob_tag = CompressedEdwardsY::from_slice(&bob_tag)
+                    .decompress()
+                    .unwrap();
+
+                self.channel.bob_tag = Some(bob_tag);
+
+                let joint_tag = self.channel.alice_tag.as_ref().unwrap()
+                    + self.channel.bob_tag.as_ref().unwrap();
+
+                println!(
+                    "{} {}",
+                    "JOINT TAG:".green(),
+                    hex::encode(joint_tag.compress().to_bytes()).green()
+                );
+                self.channel.joint_tag = Some(joint_tag);
+            }
+
+            BobUpdateAliceTag => {
+                let alice_tag = if let peerd_msg::Data::Tag(alice_tag) = msg.data.unwrap() {
+                    alice_tag
+                } else {
+                    unreachable!()
+                };
+                let alice_tag = CompressedEdwardsY::from_slice(&alice_tag)
+                    .decompress()
+                    .unwrap();
+
+                self.channel.alice_tag = Some(alice_tag);
+
+                let joint_tag = self.channel.alice_tag.as_ref().unwrap()
+                    + self.channel.bob_tag.as_ref().unwrap();
+
+                println!(
+                    "{} {}",
+                    "JOINT TAG:".green(),
+                    hex::encode(joint_tag.compress().to_bytes()).green()
+                );
+                self.channel.joint_tag = Some(joint_tag);
+            }
+
             ResChannelInfo => unreachable!(),
             ResAddress => unreachable!(),
+            AliceResHash => unreachable!(),
+            AliceResPubkey => unreachable!(),
+            BobResPubkey => unreachable!(),
+            AliceResTag => unreachable!(),
+            BobResTag => unreachable!(),
             Unspecified => unreachable!(),
         }
 
@@ -290,6 +494,7 @@ impl Client {
     }
 }
 
+// this killing process is bad; se should gracefully shutdown the child processes
 impl Drop for Client {
     fn drop(&mut self) {
         if self.peerd_process.is_some() {
