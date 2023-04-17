@@ -4,10 +4,10 @@ use log::debug;
 use monero_serai::wallet::address;
 use std::{env, ffi::OsStr, fmt::Display, process};
 
-mod channel;
-mod lhtlp;
+pub mod channel;
+pub mod lhtlp;
 pub mod utils;
-mod vtdlog;
+pub mod vtdlog;
 
 #[derive(Debug)]
 pub enum PaymoProcess {

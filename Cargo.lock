@@ -441,8 +441,6 @@ dependencies = [
 [[package]]
 name = "dalek-ff-group"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db3e7ef216c8d76dd51ee63da4dcb0818b7ec75e018aaf634699e640d7b405f3"
 dependencies = [
  "crypto-bigint",
  "curve25519-dalek",
@@ -450,6 +448,7 @@ dependencies = [
  "ff",
  "group",
  "rand_core 0.6.4",
+ "rustversion",
  "sha2 0.9.9",
  "subtle",
  "zeroize",
@@ -564,9 +563,9 @@ dependencies = [
 
 [[package]]
 name = "ff"
-version = "0.12.1"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d013fc25338cc558c5c2cfbad646908fb23591e2404481826742b651c9af7160"
+checksum = "ded41244b729663b1e574f1b4fb731469f69f79c17667b5d776b16cda0479449"
 dependencies = [
  "bitvec",
  "rand_core 0.6.4",
@@ -768,9 +767,9 @@ checksum = "d2fabcfbdc87f4758337ca535fb41a6d701b65693ce38287d856d1674551ec9b"
 
 [[package]]
 name = "group"
-version = "0.12.1"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5dfbfb3a6cfbd390d5c9564ab283a0349b9b9fcd46a706c1eb10e0db70bfbac7"
+checksum = "f0f9ef7462f7c099f518d754361858f86d8a07af53ba9af0fe635bbccb151a63"
 dependencies = [
  "ff",
  "rand_core 0.6.4",
@@ -1233,8 +1232,6 @@ dependencies = [
 [[package]]
 name = "monero-generators"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b01f8ec75a32fb36fb8d05f52f482c0c41d05370459d8b7b1872b69a76a4c83"
 dependencies = [
  "curve25519-dalek",
  "dalek-ff-group",
@@ -1267,8 +1264,6 @@ dependencies = [
 [[package]]
 name = "monero-serai"
 version = "0.1.4-alpha"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6a5795c3cc4e5d73ca7902badf2cfad4b94988a0372f5694e2b46961ed30bcf"
 dependencies = [
  "base58-monero",
  "crc",
@@ -1298,12 +1293,11 @@ dependencies = [
 [[package]]
 name = "multiexp"
 version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "646be0f1a191d656318a362e264068f2e70cbc8b82cac8807c55b8c4e22f9821"
 dependencies = [
  "ff",
  "group",
  "rand_core 0.6.4",
+ "rustversion",
  "zeroize",
 ]
 
@@ -1499,7 +1493,6 @@ dependencies = [
  "curve25519-dalek",
  "hex",
  "hex-literal",
- "lazy_static",
  "log",
  "monero 0.18.2",
  "monero-rpc",
@@ -1508,12 +1501,14 @@ dependencies = [
  "pretty_env_logger",
  "prost",
  "prost-build",
+ "rand",
  "rand_core 0.6.4",
  "serde",
  "sha3",
  "thiserror",
  "tokio",
  "url",
+ "zeroize",
  "zmq",
 ]
 
@@ -1926,6 +1921,12 @@ dependencies = [
  "linux-raw-sys",
  "windows-sys 0.45.0",
 ]
+
+[[package]]
+name = "rustversion"
+version = "1.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4f3208ce4d8448b3f3e7d168a73f5e0c43a61e32930de3bceeccedb388b6bf06"
 
 [[package]]
 name = "ryu"

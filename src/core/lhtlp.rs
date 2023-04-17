@@ -8,7 +8,8 @@ mod bindings {
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }
 
-pub const SECURITY_PARAM: u64 = 1024;
+// in practice, this number would be much higher (1024, 2048, etc)
+pub const SECURITY_PARAM: u64 = 512;
 
 pub struct Puzzle {
     pp: MaybeUninit<bindings::LHP_param_t>,

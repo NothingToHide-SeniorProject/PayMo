@@ -13,3 +13,9 @@ TODO: add example where Bob closes the channel at some time
 TODO: explain that our implementation is not exactly the same as in the paymo protocol because of time constraints, etc, and that we skipped the NIZK proofs
 TODO: explain this is more of a POC to validate the idea
 TODO: mention that we used then VTDLog described in G
+
+TODO: test Alice submitting final transaction and then Bob trying to submit a final transaction
+TODO: test Bob submitting final transaction and then Bob trying to submit anotheer transaction
+TODO: test Bob submitting final transaction and then Alice trying to submit a final transaction
+
+TODO: push my changes to serai to my github account and update the Cargo.toml here
