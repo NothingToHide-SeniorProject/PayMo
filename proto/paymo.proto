@@ -34,6 +34,31 @@ message PeerdMsg {
 
     BOB_UPDATE_ALICE_ADDRESS = 7;
     ALICE_UPDATE_BOB_ADDRESS = 8;
+
+    ALICE_CREATE_SECRET = 9;
+    ALICE_REQ_HASH = 10;
+    ALICE_RES_HASH = 11;
+
+    BOB_CREATE_SECRET = 12;
+    BOB_UPDATE_ALICE_HASH = 13;
+
+    ALICE_REQ_PUBKEY = 14;
+    ALICE_RES_PUBKEY = 15;
+
+    BOB_REQ_PUBKEY = 16;
+    BOB_RES_PUBKEY = 17;
+
+    ALICE_UPDATE_BOB_KEY = 18;
+    BOB_UPDATE_ALICE_KEY = 19;
+
+    ALICE_UPDATE_BOB_TAG = 20;
+    BOB_UPDATE_ALICE_TAG = 21;
+
+    ALICE_REQ_TAG = 22;
+    ALICE_RES_TAG = 23;
+
+    BOB_REQ_TAG = 24;
+    BOB_RES_TAG = 25;
   }
 
   PeerdMsgType msg_type = 1;
@@ -41,6 +66,10 @@ message PeerdMsg {
   oneof data {
     ChannelInfo channel_info = 2;
     string address = 3;
+
+    bytes hash = 4;
+    bytes pubkey = 5;
+    bytes tag = 6;
   }
 }
 
@@ -59,6 +88,16 @@ message PeerMsg {
 
     REQ_ADDRESS = 5;
     RES_ADDRESS = 6;
+
+    START_JOINT = 7;
+
+    ALICE_RES_HASH = 8;
+
+    ALICE_RES_PUBKEY = 9;
+    BOB_RES_PUBKEY = 10;
+
+    ALICE_RES_TAG = 11;
+    BOB_RES_TAG = 12;
   }
 
   PeerMsgType msg_type = 1;
@@ -66,5 +105,9 @@ message PeerMsg {
   oneof data {
     ChannelInfo channel_info = 2;
     string address = 3;
+
+    bytes hash = 4;
+    bytes pubkey = 5;
+    bytes tag = 6;
   }
 }

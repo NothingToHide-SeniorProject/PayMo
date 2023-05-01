@@ -32,7 +32,7 @@ pub enum Error {
     Watcherd(#[from] watcherd::Error),
 
     #[error(transparent)]
-    MoneroAddress(#[from] monero::util::address::Error),
+    MoneroAddress(#[from] monero_serai::wallet::address::AddressError),
 
     #[error("ZMQ error: {0}")]
     Zmq(#[from] zmq::Error),

@@ -1,7 +1,13 @@
 use crate::cli;
-use core::time;
+use curve25519_dalek::{edwards::EdwardsPoint, scalar::Scalar};
 use log::debug;
+use monero_serai::wallet::address;
 use std::{env, ffi::OsStr, fmt::Display, process};
+
+pub mod channel;
+pub mod lhtlp;
+pub mod utils;
+pub mod vtdlog;
 
 #[derive(Debug)]
 pub enum PaymoProcess {
@@ -58,27 +64,53 @@ pub enum Role {
 
 #[derive(Debug)]
 pub struct Channel {
-    role: Role,
-
-    pub alice_address: Option<monero::Address>,
-    pub bob_address: Option<monero::Address>,
+    pub alice_address: Option<address::MoneroAddress>,
+    pub bob_address: Option<address::MoneroAddress>,
 
     pub channel_amount: Option<monero::Amount>,
 
-    pub time: Option<time::Duration>,
+    pub time: Option<u64>,
     pub confirmations: Option<u32>,
+
+    pub alice_secret: Option<Scalar>,
+    pub bob_secret: Option<Scalar>,
+
+    pub alice_public_key: Option<EdwardsPoint>,
+    pub bob_public_key: Option<EdwardsPoint>,
+
+    pub alice_hash: Option<Vec<u8>>,
+    pub bob_hash: Option<Vec<u8>>,
+
+    pub alice_tag: Option<EdwardsPoint>,
+    pub bob_tag: Option<EdwardsPoint>,
+
+    pub joint_public_key: Option<EdwardsPoint>,
+    pub joint_tag: Option<EdwardsPoint>,
 }
 
 impl Channel {
     pub fn from_opts(opts: &cli::Opts) -> Self {
         let mut channel = Self {
-            role: opts.role.clone(),
-
             alice_address: None,
             bob_address: None,
             channel_amount: None,
             time: None,
             confirmations: None,
+
+            alice_secret: None,
+            bob_secret: None,
+
+            alice_hash: None,
+            bob_hash: None,
+
+            alice_public_key: None,
+            bob_public_key: None,
+
+            alice_tag: None,
+            bob_tag: None,
+
+            joint_public_key: None,
+            joint_tag: None,
         };
 
         match opts.role {
@@ -99,8 +131,6 @@ impl Channel {
         channel
     }
 }
-
-// TODO protocol functions that deal with cryptography only, no networking
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {}

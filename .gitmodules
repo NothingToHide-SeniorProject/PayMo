@@ -1,0 +1,3 @@
+[submodule "liblhtlp"]
+	path = liblhtlp
+	url = https://github.com/LeoNero/liblhtlp
