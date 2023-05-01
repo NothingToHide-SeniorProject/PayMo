@@ -22,7 +22,7 @@ hex-literal = "0.3.4"
 log = "0.4.17"
 monero = "0.18.2"
 monero-rpc = "0.3.2"
-monero-serai = { path = "../serai/coins/monero" }
+monero-serai = { git = "https://github.com/LeoNero/serai", branch = "develop" }
 pretty_env_logger = "0.4.0"
 prost = "0.11.6"
 rand = "0.8.5"

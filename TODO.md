@@ -17,5 +17,3 @@ TODO: mention that we used then VTDLog described in G
 TODO: test Alice submitting final transaction and then Bob trying to submit a final transaction
 TODO: test Bob submitting final transaction and then Bob trying to submit anotheer transaction
 TODO: test Bob submitting final transaction and then Alice trying to submit a final transaction
-
-TODO: push my changes to serai to my github account and update the Cargo.toml here

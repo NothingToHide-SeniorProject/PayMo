@@ -1,11 +1,79 @@
 # PayMo - POC
 
 ## Introduction
-PayMo [https://eprint.iacr.org/2020/1441](https://eprint.iacr.org/2020/1441) is a protocol that enables uni-directional payment channels in Monero. This repository implements a POC of such paper.
+PayMo [https://eprint.iacr.org/2020/1441](https://eprint.iacr.org/2020/1441) is a protocol that enables uni-directional payment channels in Monero. This repository tries to implement a POC of such paper.
 
 ## How to run (what we have so far)
 ### Pre-requisites
-- you need `protoc` installed
+#### `protoc`
+You need `protoc` installed; refer to [https://protobuf.dev/](https://protobuf.dev/) for installation guides.
+
+##### Running a private `monerod` instance
+We recommend running the following command, which also enables `ZMQ`, and runs Monero in regtest mode.
+```sh
+    monerod --keep-fakechain \
+        --regtest \
+        --p2p-bind-ip 0.0.0.0 \
+        --rpc-bind-ip 0.0.0.0 \
+        --zmq-rpc-bind-ip 0.0.0.0 \
+        --p2p-bind-port 18080 \
+        --rpc-bind-port 18081 \
+        --zmq-rpc-bind-port 18082 \
+        --zmq-pub tcp://0.0.0.0:18889 \
+        --no-igd \
+        --hide-my-port \
+        --confirm-external-bind \
+        --offline \
+        --fixed-difficulty 1 \
+        --data-dir (pwd)/node_01 \
+        --log-level 0 \
+        --log-file (pwd)/node_01/log
+```
+
+Note that it will create a folder called `node_01` in your current working directory.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##### Creating private wallets
+
+
+#### Running private `monero-wallet-rpc` instances
+- you need a private `monerod` instance; we recommend running the following command with the following ports:
+
+- you need two `monero-wallet-rpc` instances running: one for Alice and one for Bob. We recommend running the following commands with the following ports:
+
+
+
+
+#### Mining new coins to Alice
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 - you need a private Monero testnet running; see [https://github.com/moneroexamples/private-testnet](https://github.com/moneroexamples/private-testnet) for details on how to create one.
 
 ### Running locally

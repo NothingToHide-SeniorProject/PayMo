@@ -64,8 +64,6 @@ pub enum Role {
 
 #[derive(Debug)]
 pub struct Channel {
-    role: Role,
-
     pub alice_address: Option<address::MoneroAddress>,
     pub bob_address: Option<address::MoneroAddress>,
 
@@ -93,8 +91,6 @@ pub struct Channel {
 impl Channel {
     pub fn from_opts(opts: &cli::Opts) -> Self {
         let mut channel = Self {
-            role: opts.role.clone(),
-
             alice_address: None,
             bob_address: None,
             channel_amount: None,

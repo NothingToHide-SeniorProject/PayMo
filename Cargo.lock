@@ -441,6 +441,7 @@ dependencies = [
 [[package]]
 name = "dalek-ff-group"
 version = "0.3.0"
+source = "git+https://github.com/LeoNero/serai?branch=develop#a7a8c333e7ae48f7a00714b638d628c0cedb985a"
 dependencies = [
  "crypto-bigint",
  "curve25519-dalek",
@@ -1232,6 +1233,7 @@ dependencies = [
 [[package]]
 name = "monero-generators"
 version = "0.3.0"
+source = "git+https://github.com/LeoNero/serai?branch=develop#a7a8c333e7ae48f7a00714b638d628c0cedb985a"
 dependencies = [
  "curve25519-dalek",
  "dalek-ff-group",
@@ -1264,6 +1266,7 @@ dependencies = [
 [[package]]
 name = "monero-serai"
 version = "0.1.4-alpha"
+source = "git+https://github.com/LeoNero/serai?branch=develop#a7a8c333e7ae48f7a00714b638d628c0cedb985a"
 dependencies = [
  "base58-monero",
  "crc",
@@ -1293,6 +1296,7 @@ dependencies = [
 [[package]]
 name = "multiexp"
 version = "0.3.1"
+source = "git+https://github.com/LeoNero/serai?branch=develop#a7a8c333e7ae48f7a00714b638d628c0cedb985a"
 dependencies = [
  "ff",
  "group",
